@@ -41,7 +41,6 @@
 
 (defun resulting-frequency (readings)
   "Returns the resulting frequency from the READINGS"
-  ;; (setq adjustments (split-string readings ", " t nil))
   (setq numbers (mapcar 'string-to-int readings))
 
   (reduce '+ numbers :initial-value 0))
@@ -101,7 +100,8 @@
 
     current-resulting-frequency))
 
-(first-repeated-frequency-change '("+1" "-1")) ; 0
-(first-repeated-frequency-change '("+1" "-2" "+3" "+1")) ; 2
+; examples
+(= (first-repeated-frequency-change '("+1" "-1")) 0)
+(= (first-repeated-frequency-change '("+1" "-2" "+3" "+1")) 2)
 
 (first-repeated-frequency-change (read-puzzle "01_input"))
