@@ -86,3 +86,60 @@
   (should (equal (duplicate-and-triplicate-counts "ababab") '(() . ("a" "b")))))
 
 (checksum (read-puzzle))
+
+; --- Part Two ---
+; Confident that your list of box IDs is complete, you're ready to find the boxes full of prototype fabric.
+
+; The boxes will have IDs which differ by exactly one character at the same position in both strings. For example, given
+; the following box IDs:
+
+; abcde
+; fghij
+; klmno
+; pqrst
+; fguij
+; axcye
+; wvxyz
+
+; The IDs abcde and axcye are close, but they differ by two characters (the second and fourth). However, the IDs fghij
+; and fguij differ by exactly one character, the third (h and u). Those must be the correct boxes.
+
+; What letters are common between the two correct box IDs? (In the example above, this is found by removing the
+; differing character from either ID, producing fgij.)
+
+(defun string-distance (string-1 string-2)
+  "Calculates the number of differences between the two strings"
+  (reduce (lambda (differences letters)
+            (if (equal (car letters) (cdr letters))
+                differences
+              (+ differences 1)))
+          (zip (split-string string-1 "" t) (split-string string-2 "" t))
+          :initial-value 0))
+
+(ert-deftest string-distance-tests ()
+  (should (equal 2 (string-distance "abcde" "axcye")))
+  (should (equal 1 (string-distance "fghij" "fguij"))))
+
+(defun common-letters-between (word other)
+  (reverse (reduce (lambda (common letters)
+                     (if (equal (car letters) (cdr letters))
+                         (cons (car letters) common)
+                       common))
+                   (zip (split-string word "" t) (split-string other "" t))
+                   :initial-value '())))
+
+(defun common-letters (box-ids)
+  "Returns the common letters between the two box IDs that differ by 1 character"
+  (let ((id-pairs (list/all-pairs box-ids)))
+    (catch 'return
+      (while id-pairs
+        (let ((pair (car id-pairs)))
+          (if (= 1 (string-distance (car pair) (cdr pair)))
+              (throw 'return (common-letters-between (car pair) (cdr pair)))
+            (setq id-pairs (cdr id-pairs))))))))
+
+(ert-deftest common-letters-test ()
+  "Tests common-letters"
+  (should (equal "fgij" (common-letters '("abcde" "fghij" "klmno" "pqrst" "fguij" "axcye" "wvxyz")))))
+
+(common-letters (read-puzzle))
