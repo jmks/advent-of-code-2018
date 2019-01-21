@@ -18,3 +18,12 @@
   (if (or (null list-1) (null list-2))
       '()
     (cons (cons (car list-1) (car list-2)) (list/zip (cdr list-1) (cdr list-2)))))
+
+(defun list/range (start elements)
+  "Returns list '(START (+ START 1) ...) of length ELEMENTS"
+  (let ((result '()))
+    (while (> elements 0)
+      (setq result (cons start result))
+      (setq start (+ start 1))
+      (setq elements (- elements 1)))
+    (reverse result)))
