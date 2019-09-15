@@ -73,6 +73,7 @@
 
 (require 'rx)
 (require 's)
+(require 'parse-time)
 ;; (require 'ht)
 
 (defun records/parse (data)
@@ -107,14 +108,7 @@ EVENT-TYPE is one of 'shift-began 'fell-asleep 'woke-up"
 (defun records/extract-minute (record)
   "Returns the minute the record occurred"
   (interactive)
-  (when (string-match
-         (rx space
-             (group (repeat 2 digit))
-             ":"
-             (group (repeat 2 digit))
-             "]")
-         record)
-    (string-to-number (match-string 2 record))))
+  (car (cdr (records/extract-date record))))
 
 ;; (records/extract-minute "[1518-11-05 00:55] wakes up")
 
@@ -130,3 +124,14 @@ EVENT-TYPE is one of 'shift-began 'fell-asleep 'woke-up"
     (string-to-number (match-string 1 record))))
 
 ;; (records/extract-guard "[1518-11-05 00:03] Guard #103 begins shift")
+
+(defun records/extract-date (record)
+  "Returns a Date list of the record"
+  (interactive)
+  (when (string-match
+         (rx bol
+             "[" (group (one-or-more (any alnum space "-" ":"))) "]")
+         record)
+    (parse-time-string (match-string 1 record))))
+
+;; (records/extract-date "[1518-11-05 00:03] Guard #103 begins shift")
