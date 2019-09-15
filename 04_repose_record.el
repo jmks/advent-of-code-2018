@@ -130,3 +130,9 @@ EVENT-TYPE is one of 'shift-began 'fell-asleep 'woke-up"
     (parse-time-string (match-string 1 record))))
 
 ;; (records/extract-date "[1518-11-05 00:03] Guard #103 begins shift")
+
+(defun records/input ()
+  "Returns the input of the puzzle, parsed as records"
+  (with-temp-buffer
+    (insert-file-contents "04_input")
+    (records/parse (buffer-string))))
