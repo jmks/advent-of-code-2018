@@ -136,3 +136,44 @@ EVENT-TYPE is one of 'shift-began 'fell-asleep 'woke-up"
   (with-temp-buffer
     (insert-file-contents "04_input")
     (records/parse (buffer-string))))
+
+(defun record/shift-began-p (record)
+  "Returns t if record is a 'shift-began type"
+  (interactive)
+  (eq (car record) 'shift-began))
+
+(defun records/group-by-shift (records)
+  "Returns a list of lists, where each sublist are the records for a single guard for a particular shift.
+
+Note: some Guards may start their shift BEFORE midnight, i.e. on the previous day.
+This is considered the start of the shift"
+  (interactive)
+  (let ((groups '()))
+    (while records
+      (let* ((begins-shift (car records))
+            (rest (cdr records))
+            (in-shift (--take-while (not (record/shift-began-p it)) rest))
+            (next-shift (--drop-while (not (record/shift-began-p it)) rest)))
+        (setq groups (cons (cons begins-shift in-shift) groups)
+              records next-shift)))
+    (reverse groups)))
+
+;; (setq aoc-test-record "[1518-11-01 00:00] Guard #10 begins shift
+;; [1518-11-01 00:05] falls asleep
+;; [1518-11-01 00:25] wakes up
+;; [1518-11-01 00:30] falls asleep
+;; [1518-11-01 00:55] wakes up
+;; [1518-11-01 23:58] Guard #99 begins shift
+;; [1518-11-02 00:40] falls asleep
+;; [1518-11-02 00:50] wakes up
+;; [1518-11-03 00:05] Guard #10 begins shift
+;; [1518-11-03 00:24] falls asleep
+;; [1518-11-03 00:29] wakes up
+;; [1518-11-04 00:02] Guard #99 begins shift
+;; [1518-11-04 00:36] falls asleep
+;; [1518-11-04 00:46] wakes up
+;; [1518-11-05 00:03] Guard #99 begins shift
+;; [1518-11-05 00:45] falls asleep
+;; [1518-11-05 00:55] wakes up")
+;; (setq aoc-test-records (records/parse aoc-test-record))
+;; (records/group-by-shift aoc-test-records)
