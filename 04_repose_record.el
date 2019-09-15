@@ -108,7 +108,7 @@ EVENT-TYPE is one of 'shift-began 'fell-asleep 'woke-up"
 (defun records/extract-minute (record)
   "Returns the minute the record occurred"
   (interactive)
-  (car (cdr (records/extract-date record))))
+  (cadr (records/extract-date record)))
 
 ;; (records/extract-minute "[1518-11-05 00:55] wakes up")
 
