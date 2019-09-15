@@ -90,27 +90,20 @@
 (defun records/parse-record (record)
   "Parses a single record into a record data structure.
 
-The data structure is a list of '(EVENT-TYPE MINUTE ...META-DATA)
+The data structure is a list of '(EVENT-TYPE DATE ...META-DATA)
 
 EVENT-TYPE is one of 'shift-began 'fell-asleep 'woke-up"
   (interactive)
   (cond ((s-index-of "begins shift" record)
-         (list 'shift-began (records/extract-minute record) (records/extract-guard record)))
+         (list 'shift-began (records/extract-date record) (records/extract-guard record)))
         ((s-index-of "falls asleep" record)
-         (list 'fell-asleep (records/extract-minute record)))
+         (list 'fell-asleep (records/extract-date record)))
         ((s-index-of "wakes up" record)
-         (list 'woke-up (records/extract-minute record)))))
+         (list 'woke-up (records/extract-date record)))))
 
 ;; (records/parse-record "[1518-11-01 00:00] Guard #10 begins shift")
 ;; (records/parse-record "[1518-11-01 00:05] falls asleep")
 ;; (records/parse-record "[1518-11-01 00:25] wakes up")
-
-(defun records/extract-minute (record)
-  "Returns the minute the record occurred"
-  (interactive)
-  (cadr (records/extract-date record)))
-
-;; (records/extract-minute "[1518-11-05 00:55] wakes up")
 
 (defun records/extract-guard (record)
   "Returns the Guard's number for the record"
