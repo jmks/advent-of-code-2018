@@ -78,8 +78,7 @@
 (defun records/parse (data)
   "Parses Guard records into record data structures"
   (interactive)
-  (let ((lines (s-split "\n" data 't)))
-    (mapcar 'records/parse-record lines)))
+  (mapcar 'records/parse-record (s-split "\n" data 't)))
 
 ;; (records/parse "[1518-11-01 00:00] Guard #10 begins shift
 ;; [1518-11-01 00:05] falls asleep
