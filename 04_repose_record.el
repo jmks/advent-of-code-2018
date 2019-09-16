@@ -272,3 +272,13 @@ It uses the DATE from the first argument's DATE"
     (cons (cadr sleepy) (most-frequent (caddr sleepy)))))
 
 ;; (puzzle/strategy-1 (-map 'shifts/from-records (records/group-by-shift aoc-test-records)))
+
+(defun puzzle/solve-part-one ()
+  "Solve part 1"
+  (interactive)
+  (let* ((by-shift (records/group-by-shift (records/input)))
+         (shifts (-map 'shifts/from-records by-shift))
+         (sleepy (puzzle/strategy-1 shifts)))
+    (* (car sleepy) (cdr sleepy))))
+
+(puzzle/solve-part-one)
