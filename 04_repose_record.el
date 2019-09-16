@@ -94,7 +94,8 @@
 
 The data structure is a list of '(EVENT-TYPE DATE ...META-DATA)
 
-EVENT-TYPE is one of 'shift-began 'fell-asleep 'woke-up"
+EVENT-TYPE is one of 'shift-began 'fell-asleep 'woke-up
+DATE is the list (SEC MIN HOUR DAY MON YEAR DOW DST TZ)"
   (interactive)
   (cond ((s-index-of "begins shift" record)
          (list 'shift-began (records/extract-date record) (records/extract-guard record)))
@@ -142,6 +143,43 @@ EVENT-TYPE is one of 'shift-began 'fell-asleep 'woke-up"
   (interactive)
   (eq (car record) 'shift-began))
 
+(defun record/fell-asleep-p (record)
+  "Returns t if record is a 'fell-asleep type"
+  (interactive)
+  (eq (car record) 'fell-asleep))
+
+(defun record/woke-up-p (record)
+  "Returns t if record is a 'woke-up type"
+  (interactive)
+  (eq (car record) 'woke-up))
+
+(defun record/minute (record)
+  "Returns minute of the record"
+  (cadadr record))
+
+;; (record/minute (records/parse-record "[1518-11-01 00:55] falls asleep"))
+
+(defun record/guard (record)
+  "Returns the Guard ID for 'shift-began record types"
+  (interactive)
+  (when (record/shift-began-p record)
+    (caddr record)))
+
+;; (record/guard (records/parse-record "[1518-11-01 00:55] falls asleep"))
+;; (record/guard (records/parse-record "[1518-03-30 00:02] Guard #1933 begins shift"))
+
+;; TODO: zero-pad month/day?
+(defun record/date (record)
+  "Returns the date of the record as YYY-MM-DD"
+  (interactive)
+  (let* ((date (cadr record))
+         (year (cadr (cddddr date)))
+         (month (car (cddddr date)))
+         (day (cadddr date)))
+    (concat (int-to-string year) "-" (int-to-string month) "-" (int-to-string day))))
+
+;; (record/date (records/parse-record "[1518-03-30 00:02] Guard #1933 begins shift"))
+
 (defun records/group-by-shift (records)
   "Returns a list of lists, where each sublist are the records for a single guard for a particular shift.
 
@@ -177,3 +215,60 @@ This is considered the start of the shift"
 ;; [1518-11-05 00:55] wakes up")
 ;; (setq aoc-test-records (records/parse aoc-test-record))
 ;; (records/group-by-shift aoc-test-records)
+
+(defun shifts/from-records (shift-records)
+  "Aggregate the records from a shift into a list (DATE GUARD MINUTES-ASLEEP)"
+  (interactive)
+  (let* ((shift-begin-record (car shift-records))
+         (date (record/date shift-begin-record))
+         (guard (record/guard shift-begin-record))
+         (minutes-asleep '()))
+
+    (when (not (record/shift-began-p shift-begin-record))
+      (error "Expected record to be a shift starting" shift-begin-record))
+
+    (setq shift-records (cdr shift-records))
+    (while shift-records
+      (let ((asleep-record (car shift-records))
+            (wakes-record (cadr shift-records)))
+
+        (when (not (record/fell-asleep-p asleep-record))
+          (error "Expected record to be falling asleep" asleep-record))
+        (when (not (record/woke-up-p wakes-record))
+          (error "Expected record to be falling asleep" wakes-record))
+
+        (setq minutes-asleep (-concat minutes-asleep
+                                      (number-sequence (record/minute asleep-record) (- (record/minute wakes-record) 1))))
+
+        (setq shift-records (cddr shift-records))))
+    (list date guard minutes-asleep)))
+
+;; (shifts/from-records (car (records/group-by-shift aoc-test-records)))
+
+(defun shifts/merge (shift other-shift)
+  "Merges the results into a SINGLE shift
+
+It uses the DATE from the first argument's DATE"
+  (interactive)
+  (when (not (eq (cadr shift) (cadr other-shift)))
+    (error "Can not merge shifts from different guards!"))
+
+  (list (car shift) (cadr shift) (-concat (caddr shift) (caddr other-shift))))
+
+;; (shifts/merge (list "FIRST" 123 '(1 2 3)) (list "SECOND" 123 '(4 5 6)))
+
+(defun most-frequent (list)
+  "Most frequent element in the list"
+  (car (--max-by (> (length it) (length other)) (-group-by 'identity list))))
+
+;; (most-frequent '(1 2 3 2))
+
+(defun puzzle/strategy-1 (shifts)
+  "Returns the tuple (GUARD . MINUTE-MOST-FREQUENTLY-ASLEEP)"
+  (interactive)
+  (let* ((by-guards (--group-by (cadr it) shifts))
+         (aggregated (--map (-reduce-from 'shifts/merge (car it) (cdr it)) (--map (cdr it) by-guards)))
+         (sleepy (--max-by (> (length (caddr it)) (length (caddr other))) aggregated)))
+    (cons (cadr sleepy) (most-frequent (caddr sleepy)))))
+
+;; (puzzle/strategy-1 (-map 'shifts/from-records (records/group-by-shift aoc-test-records)))
