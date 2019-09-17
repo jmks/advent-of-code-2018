@@ -272,12 +272,17 @@ It uses the DATE from the first argument's DATE"
 
 ;; (most-frequent '(1 2 3 2))
 
+(defun shifts/aggregated-guard-shifts (shifts)
+  ""
+  (interactive)
+  (let* ((by-guards (--group-by (cadr it) shifts))
+         (guard-shifts (--map (cdr it) by-guards)))
+    (--map (-reduce-from 'shifts/merge (car it) (cdr it)) guard-shifts)))
+
 (defun puzzle/strategy-1 (shifts)
   "Returns the tuple (GUARD . MINUTE-MOST-FREQUENTLY-ASLEEP)"
   (interactive)
-  (let* ((by-guards (--group-by (cadr it) shifts))
-         (aggregated (--map (-reduce-from 'shifts/merge (car it) (cdr it)) (--map (cdr it) by-guards)))
-         (sleepy (--max-by (> (length (caddr it)) (length (caddr other))) aggregated)))
+  (let ((sleepy (--max-by (> (length (caddr it)) (length (caddr other))) (shifts/aggregated-guard-shifts shifts))))
     (cons (cadr sleepy) (most-frequent (caddr sleepy)))))
 
 ;; (puzzle/strategy-1 (-map 'shifts/from-records (records/group-by-shift aoc-test-records)))
