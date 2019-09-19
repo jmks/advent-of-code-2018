@@ -313,3 +313,13 @@ The GUARD is the one who is most frequently asleep at the particular MINUTE-MOST
          (guard-most-sleepy-for-minute (--max-by (> (length (cdr it)) (length (cdr other)))
                                                  guard-most-frequent-minute-slept)))
     (cons (car guard-most-sleepy-for-minute) (cadr guard-most-sleepy-for-minute))))
+
+(defun puzzle/solve-part-two ()
+  "Solve part 2"
+  (interactive)
+  (let* ((by-shift (records/group-by-shift (records/input)))
+         (shifts (-map 'shifts/from-records by-shift))
+         (sleepy-by-minute (puzzle/strategy-2 shifts)))
+    (* (car sleepy-by-minute) (cdr sleepy-by-minute))))
+
+(puzzle/solve-part-two)
