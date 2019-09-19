@@ -288,7 +288,7 @@ during SHIFTS"
   (let ((sleepy (--max-by (> (length (caddr it)) (length (caddr other))) (shifts/aggregated-guard-shifts shifts))))
     (cons (cadr sleepy) (most-frequent (caddr sleepy)))))
 
-;; (puzzle/strategy-1 (-map 'shifts/from-records (records/group-by-shift aoc-test-records)))
+(puzzle/strategy-1 (-map 'shifts/from-records (records/group-by-shift aoc-test-records)))
 
 (defun puzzle/solve-part-one ()
   "Solve part 1"
@@ -299,3 +299,17 @@ during SHIFTS"
     (* (car sleepy) (cdr sleepy))))
 
 (puzzle/solve-part-one)
+
+(defun puzzle/strategy-2 (shifts)
+  "Returns the tuple (GUARD . MINUTE-MOST-FREQUENTLY-ASLEEP)
+
+The GUARD is the one who is most frequently asleep at the particular MINUTE-MOST-FREQUENTLY-ASLEEP"
+  (interactive)
+  (let* ((aggregate-shifts (shifts/aggregated-guard-shifts shifts))
+         (guard-most-frequent-minute-slept (--map (cons (cadr it)
+                                                        (--max-by (> (length it) (length other))
+                                                                  (-group-by 'identity (caddr it))))
+                                                  aggregate-shifts))
+         (guard-most-sleepy-for-minute (--max-by (> (length (cdr it)) (length (cdr other)))
+                                                 guard-most-frequent-minute-slept)))
+    (cons (car guard-most-sleepy-for-minute) (cadr guard-most-sleepy-for-minute))))
