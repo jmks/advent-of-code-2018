@@ -273,7 +273,10 @@ It uses the DATE from the first argument's DATE"
 ;; (most-frequent '(1 2 3 2))
 
 (defun shifts/aggregated-guard-shifts (shifts)
-  ""
+  "Returns a single 'shift' per GUARD.
+
+The date is inaccurate and the minutes are all minutes GUARD was alseep
+during SHIFTS"
   (interactive)
   (let* ((by-guards (--group-by (cadr it) shifts))
          (guard-shifts (--map (cdr it) by-guards)))
