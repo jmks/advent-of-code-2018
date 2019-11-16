@@ -237,3 +237,11 @@
        (examples))
 
 (game/winning-score (game/play (game/new (car (puzzle/input)) (cdr (puzzle/input)))))
+
+;; --- Part Two ---
+
+;; Amused by the speed of your answer, the Elves are curious:
+
+;; What would the new winning Elf's score be if the number of the last marble were 100 times larger?
+
+(game/winning-score (game/play (game/new (car (puzzle/input)) (* 100 (cdr (puzzle/input))))))
