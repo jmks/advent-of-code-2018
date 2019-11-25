@@ -247,15 +247,21 @@ position=<-3,  6> velocity=< 2, -1>
          (ymax (-max ypos)))
     (* (- xmax xmin) (- ymax ymin))))
 
-(cl-defun print-when-smallet (points)
-  (let ((last-points points)
+(cl-defun step-until-smallest (points)
+  (let ((steps 0)
+        (last-points points)
         (last-area (points/area points)))
     (while (<= (points/area points) last-area)
       (setq last-points points
             last-area (points/area points)
-            points (step points)))
-    (points/print last-points)
-    last-points))
+            points (step points)
+            steps (+ steps 1)))
+    (cons (- steps 1) last-points)))
+
+(cl-defun print-when-smallet (points)
+  (let* ((result (step-until-smallest points))
+         (last-points (cdr result)))
+    (points/print last-points)))
 
 (print-when-smallet (example/points))
 
@@ -265,3 +271,16 @@ position=<-3,  6> velocity=< 2, -1>
     (-map 'input/parse-point (s-split "\n" (s-trim (buffer-string)) 't))))
 
 (print-when-smallet (puzzle-input))
+
+;; --- Part Two ---
+
+;; Good thing you didn't have to wait, because that would have taken a long time - much longer than the 3 seconds in the example above.
+
+;; Impressed by your sub-hour communication capabilities, the Elves are curious: exactly how many seconds would they have needed to wait for that message to appear?
+
+(cl-defun steps-for-message (points)
+  (let* ((result (step-until-smallest points))
+         (steps (car result)))
+    steps))
+
+(steps-for-message (puzzle-input))
